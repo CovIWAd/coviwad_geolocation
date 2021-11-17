@@ -1,6 +1,8 @@
 package fr.polytech.mtp.coviwad_geolocation.models;
 
 import javax.persistence.*;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import java.util.Date;
 
 @Entity
@@ -12,10 +14,15 @@ public class Geolocation {
     //@Column(name="user_id")
     private String userId;
 
+    @Max(90)
+    @Min(-90)
     private double latitude;
 
+    @Max(180)
+    @Min(-180)
     private double longitude;
 
+    @Min(0)
     private Date timestamp;
 
     public double getLatitude() {
