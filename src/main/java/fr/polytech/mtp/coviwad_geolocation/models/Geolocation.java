@@ -9,9 +9,10 @@ import java.util.Date;
 public class Geolocation {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @Column(name="geolocation_id")
     private Long id;
 
-    //@Column(name="user_id")
+    @Column(name="user_id")
     private String userId;
 
     @Max(90)
@@ -23,6 +24,7 @@ public class Geolocation {
     private double longitude;
 
     @Min(0)
+    @Column(name="geolocation_date")
     private Date timestamp;
 
     public double getLatitude() {
