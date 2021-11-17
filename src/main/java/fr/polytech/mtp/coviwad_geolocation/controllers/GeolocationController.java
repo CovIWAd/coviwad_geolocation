@@ -25,7 +25,9 @@ public class GeolocationController {
     public Geolocation addUserGeolocation(Principal principal, @Valid @RequestBody Geolocation geolocation )
     {
         String userId = "theId0";
-        if(principal != null && principal.getName().length() > 0) userId = principal.getName();
+        if(principal != null){
+            userId = principal.getName();
+        }
         Geolocation document = new Geolocation(userId, geolocation.getLatitude(), geolocation.getLongitude(), geolocation.getTimestamp());
         Geolocation saved =  geolocationRepository.save(document);
         geolocationKafkaTemplate.send("geolocation_added", document);
