@@ -77,9 +77,9 @@ public class KafkaConfiguration {
     }
 
     @Bean
-    public ConsumerFactory<String, Geolocation> geolocationConsumerFactory() {
+    public static ConsumerFactory<String, Geolocation> geolocationConsumerFactory() {
         Map<String, Object> props = new HashMap<>();
-        props.put(ConsumerConfig.GROUP_ID_CONFIG,"covid-alert");
+        props.put(ConsumerConfig.GROUP_ID_CONFIG,"coviwad");
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, serverName);
         return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), new JsonDeserializer<>(Geolocation.class));
     }
@@ -94,7 +94,7 @@ public class KafkaConfiguration {
     @Bean
     public ConsumerFactory<String, UserPositive> userConsumerFactory() {
         Map<String, Object> props = new HashMap<>();
-        props.put(ConsumerConfig.GROUP_ID_CONFIG,"covid-alert");
+        props.put(ConsumerConfig.GROUP_ID_CONFIG,"coviwad");
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, serverName);
         return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), new JsonDeserializer<>(UserPositive.class));
     }

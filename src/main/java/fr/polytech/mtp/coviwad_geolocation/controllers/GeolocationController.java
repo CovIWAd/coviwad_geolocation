@@ -2,6 +2,10 @@ package fr.polytech.mtp.coviwad_geolocation.controllers;
 
 import fr.polytech.mtp.coviwad_geolocation.models.Geolocation;
 import fr.polytech.mtp.coviwad_geolocation.repositories.GeolocationRepository;
+import fr.polytech.mtp.coviwad_geolocation.services.GeolocationKafkaService;
+import fr.polytech.mtp.coviwad_geolocation.utils.GeolocationUtils;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -11,6 +15,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 import java.security.Principal;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/geolocation")
@@ -21,17 +28,35 @@ public class GeolocationController {
     @Autowired
     private KafkaTemplate<String, Geolocation> geolocationKafkaTemplate;
 
-    @PostMapping
-    public Geolocation addUserGeolocation(Principal principal, @Valid @RequestBody Geolocation geolocation )
+    @Autowired
+    private ConsumerFactory<String, Geolocation> geolocationConsumerFactory;
+
+    @Autowired
+    GeolocationKafkaService geolocationKafkaService;
+
+    //TODO : POST /positive body : geolocation
+    //aller lire dans kafka les localisation de -10m sur les 5 derniers jours
+    //enregistrer les localisation "cas contacts" dans la bd + envoyer un mail aux personnes "cas contact"
+    @PostMapping("/positive")
+    public void addPositiveUserGeolocation(Principal principal)
     {
-        String userId = "theId0";
-        if(principal != null){
-            userId = principal.getName();
+        String idUserCovid = "";
+        if(principal != null && principal.getName().length() > 0) {
+            idUserCovid = principal.getName();
+            //find user potential covided + save their locations that are risky
+            Set<String> usersToWarn = geolocationKafkaService.getUsersPotentialCovid(geolocationConsumerFactory, geolocationRepository, idUserCovid);
+            // Now send mails to potential users covided
+            if(usersToWarn.size() > 0) {
+                geolocationKafkaService.sendMailToCasContact(usersToWarn);
+            }
         }
-        Geolocation document = new Geolocation(userId, geolocation.getLatitude(), geolocation.getLongitude(), geolocation.getTimestamp());
-        Geolocation saved =  geolocationRepository.save(document);
-        geolocationKafkaTemplate.send("geolocation_added", document);
-        return saved;
+    }
+
+    @PostMapping
+    public Geolocation addUserGeolocation(@Valid @RequestBody Geolocation geolocation )
+    {
+        geolocationKafkaTemplate.send("geolocation_added", geolocation);
+        return geolocation;
     }
 
 }

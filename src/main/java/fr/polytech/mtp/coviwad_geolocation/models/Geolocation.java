@@ -25,7 +25,7 @@ public class Geolocation {
 
     @Min(0)
     @Column(name="geolocation_date")
-    private Date timestamp;
+    private Date geolocationDate;
 
     public double getLatitude() {
         return latitude;
@@ -35,8 +35,8 @@ public class Geolocation {
         return longitude;
     }
 
-    public Date getTimestamp() {
-        return timestamp;
+    public Date getGeolocationDate() {
+        return geolocationDate;
     }
 
     public String getUserId() {
@@ -62,15 +62,15 @@ public class Geolocation {
         this.longitude = longitude;
     }
 
-    public void setTimestamp(Date timestamp) {
-        this.timestamp = timestamp;
+    public void setGeolocationDate(Date timestamp) {
+        this.geolocationDate = timestamp;
     }
 
-    public Geolocation(String userId, double latitude, double longitude, Date timestamp) {
+    public Geolocation(String userId, double latitude, double longitude, Date geolocationDate) {
         this.userId = userId;
         this.latitude = latitude;
         this.longitude = longitude;
-        this.timestamp = timestamp;
+        this.geolocationDate = geolocationDate;
     }
 
 }
