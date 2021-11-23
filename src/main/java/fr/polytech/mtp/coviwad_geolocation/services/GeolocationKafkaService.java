@@ -72,8 +72,7 @@ public class GeolocationKafkaService {
         return map;
     }
 
-    public Set<String> getUsersPotentialCovid (ConsumerFactory<String, Geolocation> geolocationConsumerFactory, GeolocationRepository geolocationRepository, String userCovid){
-        Consumer<String,Geolocation> consumer = geolocationConsumerFactory.createConsumer();
+    public Set<String> getUsersPotentialCovid (Consumer<String,Geolocation> consumer, GeolocationRepository geolocationRepository, String userCovid){
         ConsumerRecords<String, Geolocation> geolocations = kafkaGetGeolocations(consumer);
 
         Map<String, List<Geolocation>> map = retrieveGeolocationsDaysKafka(geolocations,5, userCovid);

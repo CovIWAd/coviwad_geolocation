@@ -24,11 +24,8 @@ public class KafkaConfiguration {
         public static ProducerFactory<String, Geolocation> geolocationProducerFactory() {
             Map<String, Object> configProps = new HashMap<>();
             configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, System.getenv("KAFKA_BOOTSTRAP_ADDRESS"));
-            configProps.put(
-                    ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
-                    StringSerializer.class);configProps.put(
-                    ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
-                    JsonSerializer.class);
+            configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+            configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
             return new DefaultKafkaProducerFactory<>(configProps);
         }
 
