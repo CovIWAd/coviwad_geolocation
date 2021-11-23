@@ -24,7 +24,7 @@ public class GeolocationKafkaService {
 
     public ConsumerRecords<String, Geolocation> kafkaGetGeolocations(Consumer<String,Geolocation> consumer) {
         //Consumer<String,Geolocation> consumer = geolocationConsumerFactory.createConsumer();
-        TopicPartition topicPartition = new TopicPartition("geolocation_added", 0);
+        TopicPartition topicPartition = new TopicPartition("geolocation_topic", 0);
         List<TopicPartition> partitions = List.of(topicPartition);
         consumer.assign(partitions);
         // We want to read all the messages

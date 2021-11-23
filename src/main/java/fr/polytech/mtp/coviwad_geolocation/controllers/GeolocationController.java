@@ -55,7 +55,7 @@ public class GeolocationController {
     @PostMapping
     public Geolocation addUserGeolocation(@Valid @RequestBody Geolocation geolocation )
     {
-        geolocationKafkaTemplate.send("geolocation_added", geolocation);
+        geolocationKafkaTemplate.send("geolocation_topic", geolocation);
         return geolocation;
     }
 

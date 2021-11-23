@@ -31,7 +31,7 @@ public class GeolocationUtils {
         //5 days ago
         Date date = new Date(System.currentTimeMillis() - (daysInMillis(5)));
         Date today = new Date();
-        return geolocationRepository.findAllByDateLocationBetween(date,today);
+        return geolocationRepository.findAllByGeolocationDateBetween(date,today);
     }
 
 
