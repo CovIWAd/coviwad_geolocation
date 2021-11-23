@@ -75,7 +75,10 @@ public class GeolocationKafkaService {
 
         List<Geolocation> geolocationsCovid = map.get("geolocCovid");
 
-        List<Geolocation> geolocationsWithin5Days = retrieveGeolocationsDaysKafka(geolocations,5);
+        List<Geolocation> geolocationsContact = map.get("geolocContact");
+
+        //we save all covid geolocations in BD
+        geolocationRepository.saveAllAndFlush(geolocationsCovid);
 
         Set<String> usersToWarn = new HashSet<>();
         String newId;
@@ -101,6 +104,7 @@ public class GeolocationKafkaService {
     }
 
     public void sendMailToCasContact(Set<String> usersToWarn){
+
         /*if(usersToWarn.size() != 0){
             StringBuilder str = new StringBuilder();
             for (String s : usersToWarn){
