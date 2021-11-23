@@ -77,7 +77,7 @@ public class KafkaConfiguration {
     }
 
     @Bean
-    public static ConsumerFactory<String, Geolocation> geolocationConsumerFactory() {
+    public ConsumerFactory<String, Geolocation> geolocationConsumerFactory() {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.GROUP_ID_CONFIG,"coviwad");
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, serverName);

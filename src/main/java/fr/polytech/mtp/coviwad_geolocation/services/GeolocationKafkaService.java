@@ -7,13 +7,8 @@ import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.common.TopicPartition;
-import org.keycloak.adapters.springsecurity.account.SimpleKeycloakAccount;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.MediaType;
 import org.springframework.kafka.core.ConsumerFactory;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.http.HttpHeaders;
 
 import java.time.Duration;
 import java.util.*;
@@ -32,54 +27,75 @@ public class GeolocationKafkaService {
         return consumer.poll(Duration.ofMillis(1000));
     }
 
-    public List<Geolocation> retrieveGeolocationsDaysKafka(ConsumerRecords<String,Geolocation> locations, int days) {
+    public Map<String, List<Geolocation>> retrieveGeolocationsDaysKafka(ConsumerRecords<String,Geolocation> geolocations, int days, String idUserCovid) {
         long currentDate = new Date().getTime();
-        Geolocation locationValue;
+        //location to know if it's the person covided or potential contact
+        Geolocation geolocationNotDetermined;
         long locationDate;
+
         long diffInMs;
         long diffInDays;
+
         List<Geolocation> geolocationsCovid = new ArrayList<>();
-        for (ConsumerRecord<String, Geolocation> location : locations) {
-            locationValue = location.value();
-            // If no date is sent, we use the moment the date was saved
-            locationDate = locationValue.getGeolocationDate() == null ?
+        List<Geolocation> geolocationsPotentialContact = new ArrayList<>();
+
+        for (ConsumerRecord<String, Geolocation> location : geolocations) {
+            geolocationNotDetermined = location.value();
+
+            locationDate = geolocationNotDetermined.getGeolocationDate() == null ?
                     location.timestamp() :
-                    locationValue.getGeolocationDate().getTime();
+                    geolocationNotDetermined.getGeolocationDate().getTime();
+
             diffInMs = Math.abs(currentDate - locationDate);
             diffInDays = TimeUnit.DAYS.convert(diffInMs, TimeUnit.MILLISECONDS);
-            // We only keep the ones of the considered user, within the last 7 days
+
             if(diffInDays <= days) {
-                geolocationsCovid.add(locationValue);
+                if(geolocationNotDetermined.getUserId().equals(idUserCovid)) {
+                    // location of the person covided
+                    geolocationsCovid.add(geolocationNotDetermined);
+                } else {
+                    geolocationNotDetermined.setGeolocationDate(new Date(locationDate));
+                    // location of a potential contact
+                    geolocationsPotentialContact.add(geolocationNotDetermined);
+                }
             }
         }
-        return geolocationsCovid;
+
+        Map<String,List<Geolocation>> map =new HashMap();
+        map.put("geolocCovid",geolocationsCovid);
+        map.put("geolocContact",geolocationsPotentialContact);
+        return map;
     }
 
-    //localisations du mec des 3 derniers jours
     public Set<String> getUsersPotentialCovid (ConsumerFactory<String, Geolocation> geolocationConsumerFactory, GeolocationRepository geolocationRepository, String userCovid){
         Consumer<String,Geolocation> consumer = geolocationConsumerFactory.createConsumer();
         ConsumerRecords<String, Geolocation> geolocations = kafkaGetGeolocations(consumer);
 
-        //récupérer les positions du mec en param sur les 3 derniers jours
-        List<Geolocation> geolocationsCovid3Days = retrieveGeolocationsDaysKafka(geolocations,3, userCovid);
+        Map<String, List<Geolocation>> map = retrieveGeolocationsDaysKafka(geolocations,5, userCovid);
+
+        List<Geolocation> geolocationsCovid = map.get("geolocCovid");
 
         List<Geolocation> geolocationsWithin5Days = retrieveGeolocationsDaysKafka(geolocations,5);
 
         Set<String> usersToWarn = new HashSet<>();
         String newId;
         double distance;
-        for(Geolocation susLoc: geolocationsWithin5Days) {
-            distance = GeolocationUtils.distanceBetween2Points(
-                    susLoc.getLatitude(),
-                    susLoc.getLongitude(),
-                    geolocCovid.getLatitude(),
-                    geolocCovid.getLongitude());
-            newId = susLoc.getUserId();
-            if(distance <= 10) {
-                // Within 10 meters, we save the id of the user to warn
-                geolocationRepository.saveAndFlush(susLoc);
-                usersToWarn.add(newId);
+        for(Geolocation susLoc: geolocationsContact) {
+            for(Geolocation covLoc: geolocationsCovid){
+                distance = GeolocationUtils.distanceBetween2Points(
+                        susLoc.getLatitude(),
+                        susLoc.getLongitude(),
+                        covLoc.getLatitude(),
+                        covLoc.getLongitude());
+                newId = susLoc.getUserId();
+                if(distance <= 10) {
+                    //we save all contact geolocations in BD
+                    geolocationRepository.saveAndFlush(susLoc);
+                    //array of people to send mail to warn them they are contact case
+                    usersToWarn.add(newId);
+                }
             }
+
         }
         return usersToWarn;
     }
