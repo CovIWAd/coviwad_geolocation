@@ -9,7 +9,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_DB: geolocation_covid
     ports:
-      - '5439:5432'
+      - '5438:5432'
     volumes:
       - ./data:/var/lib/postgresql/data
       # copy the sql script to create tables
