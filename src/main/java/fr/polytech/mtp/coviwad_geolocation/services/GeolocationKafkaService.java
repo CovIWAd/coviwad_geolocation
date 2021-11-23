@@ -7,15 +7,20 @@ import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.common.TopicPartition;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.stereotype.Service;
 
+import javax.mail.MessagingException;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Service
 public class GeolocationKafkaService {
+
+    @Autowired
+    private EmailService emailService;
 
     public ConsumerRecords<String, Geolocation> kafkaGetGeolocations(Consumer<String,Geolocation> consumer) {
         //Consumer<String,Geolocation> consumer = geolocationConsumerFactory.createConsumer();
@@ -98,28 +103,19 @@ public class GeolocationKafkaService {
                     usersToWarn.add(newId);
                 }
             }
-
         }
         return usersToWarn;
     }
 
     public void sendMailToCasContact(Set<String> usersToWarn){
 
-        /*if(usersToWarn.size() != 0){
-            StringBuilder str = new StringBuilder();
-            for (String s : usersToWarn){
-                str.append(s).append(",");
+        usersToWarn.forEach((userId) -> {
+            try {
+                emailService.sendEmail(userId, "Hello, You have been in contact with a patient. Please stay home", "Coviwad Alert !");
+            } catch (MessagingException e) {
+                e.printStackTrace();
             }
-            str.deleteCharAt(str.length() - 1);
-
-            // Find mails thanks to id
-
-            String[] idsUsers = Objects.requireNonNull(restTemplate.getForObject(urlGetIds, String[].class, idsRequest.toString()));
-            String subject = "WARNING: Suspect case";
-            String content = "Sir or Madam, \n\n" +
-                    "You have previously entered a location being close to a person who has just declared himself positive for the Covid-19 virus.\n\n" +
-                    "If you have any symptoms please do a PCR or antigen test. Be careful.\n\n Coviwad Team";
-        }*/
+        });
 
     }
 
