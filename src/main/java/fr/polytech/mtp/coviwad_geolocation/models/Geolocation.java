@@ -6,10 +6,10 @@ import javax.validation.constraints.Min;
 import java.io.Serializable;
 import java.util.Date;
 
-@Entity
+@Entity(name = "geolocations")
 public class Geolocation implements Serializable {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="geolocation_id")
     private Long id;
 
@@ -27,6 +27,10 @@ public class Geolocation implements Serializable {
     @Min(0)
     @Column(name="geolocation_date")
     private Date geolocationDate;
+
+    public Long getId() {
+        return id;
+    }
 
     public double getLatitude() {
         return latitude;

@@ -38,13 +38,13 @@ public class GeolocationController {
     GeolocationKafkaService geolocationKafkaService;
 
     @PostMapping("/positive")
-    public void addPositiveUserGeolocation(@Valid @RequestBody String userId)
+    public void addPositiveUserGeolocation(Principal principal)
     {
-        System.out.println(userId);
-        if(userId != null && userId.length() > 0) {
-            System.out.println("ICI"+ userId);
+        System.out.println(principal.getName());
+        if(principal.getName() != null && principal.getName().length() > 0) {
+            System.out.println("ICI"+ principal.getName());
             //find user potential covided + save their locations that are risky
-            Set<String> usersToWarn = geolocationKafkaService.getUsersPotentialCovid(consumer, geolocationRepository, userId);
+            Set<String> usersToWarn = geolocationKafkaService.getUsersPotentialCovid(consumer, geolocationRepository, principal.getName());
             // Now send mails to potential users covided
             if(usersToWarn.size() > 0) {
                 geolocationKafkaService.sendMailToCasContact(usersToWarn);
