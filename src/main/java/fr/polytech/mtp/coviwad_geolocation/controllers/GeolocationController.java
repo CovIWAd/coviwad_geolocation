@@ -12,6 +12,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import java.security.Principal;
 import java.util.HashSet;
@@ -19,7 +20,8 @@ import java.util.List;
 import java.util.Set;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:3000/*")
+@RolesAllowed({"user"})
+@CrossOrigin(origins = "http://localhost:3000")
 @RequestMapping("/api/geolocation")
 public class GeolocationController {
     @Autowired
