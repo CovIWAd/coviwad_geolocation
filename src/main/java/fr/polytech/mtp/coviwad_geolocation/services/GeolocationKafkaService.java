@@ -81,6 +81,9 @@ public class GeolocationKafkaService {
 
         List<Geolocation> geolocationsContact = map.get("geolocContact");
 
+        System.out.println(geolocations);
+        System.out.println(geolocationsCovid);
+
         //we save all covid geolocations in BD
         geolocationRepository.saveAllAndFlush(geolocationsCovid);
 

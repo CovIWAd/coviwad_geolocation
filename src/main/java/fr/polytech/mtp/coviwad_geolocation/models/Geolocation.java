@@ -3,10 +3,11 @@ package fr.polytech.mtp.coviwad_geolocation.models;
 import javax.persistence.*;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import java.io.Serializable;
 import java.util.Date;
 
 @Entity
-public class Geolocation {
+public class Geolocation implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name="geolocation_id")

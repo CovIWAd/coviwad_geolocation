@@ -10,10 +10,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.security.Principal;
@@ -22,6 +19,7 @@ import java.util.List;
 import java.util.Set;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:3000/*")
 @RequestMapping("/api/geolocation")
 public class GeolocationController {
     @Autowired
@@ -32,16 +30,19 @@ public class GeolocationController {
     private final Consumer<String,Geolocation> consumer = KafkaConfiguration.geolocationConsumerFactory().createConsumer();
 
     @Autowired
+    private KafkaTemplate<String, Geolocation> geolocationKafkaTemplate;
+
+    @Autowired
     GeolocationKafkaService geolocationKafkaService;
 
     @PostMapping("/positive")
-    public void addPositiveUserGeolocation(Principal principal)
+    public void addPositiveUserGeolocation(@Valid @RequestBody String userId)
     {
-        String idUserCovid = "";
-        if(principal != null && principal.getName().length() > 0) {
-            idUserCovid = principal.getName();
+        System.out.println(userId);
+        if(userId != null && userId.length() > 0) {
+            System.out.println("ICI"+ userId);
             //find user potential covided + save their locations that are risky
-            Set<String> usersToWarn = geolocationKafkaService.getUsersPotentialCovid(consumer, geolocationRepository, idUserCovid);
+            Set<String> usersToWarn = geolocationKafkaService.getUsersPotentialCovid(consumer, geolocationRepository, userId);
             // Now send mails to potential users covided
             if(usersToWarn.size() > 0) {
                 geolocationKafkaService.sendMailToCasContact(usersToWarn);
@@ -52,7 +53,9 @@ public class GeolocationController {
     @PostMapping
     public Geolocation addUserGeolocation(@Valid @RequestBody Geolocation geolocation )
     {
-        producer.send("geolocation_topic", geolocation);
+        System.out.println("LAAAA");
+        System.out.println(geolocation.getLatitude());
+        geolocationKafkaTemplate.send("geolocation_topic", geolocation);
         return geolocation;
     }
 
