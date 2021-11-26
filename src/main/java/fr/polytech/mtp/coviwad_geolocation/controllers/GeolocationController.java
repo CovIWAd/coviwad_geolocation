@@ -1,6 +1,7 @@
 package fr.polytech.mtp.coviwad_geolocation.controllers;
 
 import fr.polytech.mtp.coviwad_geolocation.config.KafkaConfiguration;
+import fr.polytech.mtp.coviwad_geolocation.dtos.PositiveTestDTO;
 import fr.polytech.mtp.coviwad_geolocation.models.Geolocation;
 import fr.polytech.mtp.coviwad_geolocation.repositories.GeolocationRepository;
 import fr.polytech.mtp.coviwad_geolocation.services.GeolocationKafkaService;
@@ -15,6 +16,8 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import java.security.Principal;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -39,15 +42,12 @@ public class GeolocationController {
     GeolocationKafkaService geolocationKafkaService;
 
     @PostMapping("/positive")
-    public void addPositiveUserGeolocation(Principal principal, @RequestParam(value = "testDate", required = false) Date testDate)
-    {
-        System.out.println(principal.getName());
+    public void addPositiveUserGeolocation(Principal principal, @RequestBody(required = false) PositiveTestDTO testDate) {
         if(principal.getName() != null && principal.getName().length() > 0) {
-            System.out.println("ICI"+ principal.getName());
             //find user potential covided + save their locations that are risky
             Set<String> usersToWarn;
-            if(testDate != null){
-                usersToWarn = geolocationKafkaService.getUsersPotentialCovid(consumer, geolocationRepository, principal.getName(), testDate);
+            if(testDate.getTestDate() != null){
+                usersToWarn = geolocationKafkaService.getUsersPotentialCovid(consumer, geolocationRepository, principal.getName(), testDate.getTestDate());
             } else {
                 usersToWarn = geolocationKafkaService.getUsersPotentialCovid(consumer, geolocationRepository, principal.getName(), null);
             }
@@ -61,9 +61,7 @@ public class GeolocationController {
     @PostMapping
     public Geolocation addUserGeolocation(@Valid @RequestBody Geolocation geolocation )
     {
-        System.out.println("LAAAA");
-        System.out.println(geolocation.getGeolocationDate());
-        geolocationKafkaTemplate.send("geolocation_topic", geolocation);
+       geolocationKafkaTemplate.send("geolocation_topic", geolocation);
         return geolocation;
     }
 

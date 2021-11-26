@@ -78,6 +78,7 @@ public class GeolocationKafkaService {
 
         Map<String, List<Geolocation>> map;
         if(testDate != null){
+            System.out.println(testDate);
             map = retrieveGeolocationsDaysKafka(geolocations,5, userCovid, testDate);
         } else {
             map = retrieveGeolocationsDaysKafka(geolocations,5, userCovid, null);
@@ -120,7 +121,7 @@ public class GeolocationKafkaService {
 
         usersToWarn.forEach((userId) -> {
             try {
-                emailService.sendEmail(userId, "Hello, You have been in contact with a patient. Please stay home", "Coviwad Alert !");
+                emailService.sendEmail(userId, "Hello ! \n\n You have been in contact with someone that is tested positive to Covid. \n\n Please stay home. If you have any symptoms please do a PCR or Antigenic Test. \n Don't forget to enter your tests in the app !", "WARNING : Covid Alert !");
             } catch (MessagingException e) {
                 e.printStackTrace();
             }
