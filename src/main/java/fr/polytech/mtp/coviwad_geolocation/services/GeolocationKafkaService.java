@@ -32,8 +32,9 @@ public class GeolocationKafkaService {
         return consumer.poll(Duration.ofMillis(1000));
     }
 
-    public Map<String, List<Geolocation>> retrieveGeolocationsDaysKafka(ConsumerRecords<String,Geolocation> geolocations, int days, String idUserCovid) {
-        long currentDate = new Date().getTime();
+    public Map<String, List<Geolocation>> retrieveGeolocationsDaysKafka(ConsumerRecords<String,Geolocation> geolocations, int days, String idUserCovid, Date testDate) {
+        long currentDate = Objects.requireNonNullElseGet(testDate, Date::new).getTime();
+
         //location to know if it's the person covided or potential contact
         Geolocation geolocationNotDetermined;
         long locationDate;
@@ -72,10 +73,16 @@ public class GeolocationKafkaService {
         return map;
     }
 
-    public Set<String> getUsersPotentialCovid (Consumer<String,Geolocation> consumer, GeolocationRepository geolocationRepository, String userCovid){
+    public Set<String> getUsersPotentialCovid (Consumer<String,Geolocation> consumer, GeolocationRepository geolocationRepository, String userCovid, Date testDate){
         ConsumerRecords<String, Geolocation> geolocations = kafkaGetGeolocations(consumer);
 
-        Map<String, List<Geolocation>> map = retrieveGeolocationsDaysKafka(geolocations,5, userCovid);
+        Map<String, List<Geolocation>> map;
+        if(testDate != null){
+            map = retrieveGeolocationsDaysKafka(geolocations,5, userCovid, testDate);
+        } else {
+            map = retrieveGeolocationsDaysKafka(geolocations,5, userCovid, null);
+        }
+
 
         List<Geolocation> geolocationsCovid = map.get("geolocCovid");
 

@@ -15,12 +15,13 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import java.security.Principal;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 @RestController
-@RolesAllowed({"user"})
+@RolesAllowed({"user","admin"})
 @CrossOrigin(origins = "http://localhost:3000")
 @RequestMapping("/api/geolocation")
 public class GeolocationController {
@@ -38,13 +39,18 @@ public class GeolocationController {
     GeolocationKafkaService geolocationKafkaService;
 
     @PostMapping("/positive")
-    public void addPositiveUserGeolocation(Principal principal)
+    public void addPositiveUserGeolocation(Principal principal, @RequestParam(value = "testDate", required = false) Date testDate)
     {
         System.out.println(principal.getName());
         if(principal.getName() != null && principal.getName().length() > 0) {
             System.out.println("ICI"+ principal.getName());
             //find user potential covided + save their locations that are risky
-            Set<String> usersToWarn = geolocationKafkaService.getUsersPotentialCovid(consumer, geolocationRepository, principal.getName());
+            Set<String> usersToWarn;
+            if(testDate != null){
+                usersToWarn = geolocationKafkaService.getUsersPotentialCovid(consumer, geolocationRepository, principal.getName(), testDate);
+            } else {
+                usersToWarn = geolocationKafkaService.getUsersPotentialCovid(consumer, geolocationRepository, principal.getName(), null);
+            }
             // Now send mails to potential users covided
             if(usersToWarn.size() > 0) {
                 geolocationKafkaService.sendMailToCasContact(usersToWarn);
@@ -56,7 +62,7 @@ public class GeolocationController {
     public Geolocation addUserGeolocation(@Valid @RequestBody Geolocation geolocation )
     {
         System.out.println("LAAAA");
-        System.out.println(geolocation.getLatitude());
+        System.out.println(geolocation.getGeolocationDate());
         geolocationKafkaTemplate.send("geolocation_topic", geolocation);
         return geolocation;
     }

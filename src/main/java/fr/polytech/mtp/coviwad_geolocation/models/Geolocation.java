@@ -24,7 +24,6 @@ public class Geolocation implements Serializable {
     @Min(-180)
     private double longitude;
 
-    @Min(0)
     @Column(name="geolocation_date")
     private Date geolocationDate;
 
