@@ -15,5 +15,3 @@ Then connect to the database '\c geolocation_covid'
 
 Run `bootRun` with the environment variables given in the documentation.
 
-See [keycloak](/keycloack).
-Go back to [news](/news).
